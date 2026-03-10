@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════════════════════════════
+   GLOBAL STYLES — Theme variables and base styles.
+
+   🤖 AGENT: This is the SECONDARY file you edit to customise a
+   company site. Change the CSS variables below to match the brand.
+   The rest of the stylesheet should rarely need changes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import "tailwindcss";
+
+/* ─── Theme variables ────────────────────────────────────────────
+   All colors use oklch for perceptual uniformity.
+   To rebrand: change --primary and --accent. Everything else adapts.
+   ─────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Brand colors — the agent changes THESE */
+  --color-primary: oklch(0.45 0.18 264);       /* Deep blue */
+  --color-primary-light: oklch(0.55 0.18 264);  /* Hover state */
+  --color-primary-dark: oklch(0.35 0.18 264);   /* Active / dark variant */
+  --color-accent: oklch(0.65 0.22 150);          /* Teal accent */
+  --color-accent-light: oklch(0.75 0.18 150);
+
+  /* Neutrals — rarely need changing */
+  --color-background: oklch(0.99 0.002 260);     /* Near-white */
+  --color-surface: oklch(0.97 0.003 260);         /* Card backgrounds */
+  --color-surface-raised: oklch(1 0 0);           /* Elevated cards */
+  --color-border: oklch(0.92 0.004 260);          /* Borders */
+  --color-border-light: oklch(0.95 0.003 260);    /* Subtle borders */
+
+  /* Text */
+  --color-foreground: oklch(0.15 0.01 260);       /* Headings, primary text */
+  --color-muted: oklch(0.55 0.015 260);           /* Secondary text */
+  --color-muted-light: oklch(0.70 0.01 260);      /* Tertiary text */
+
+  /* Functional */
+  --color-success: oklch(0.60 0.18 145);
+  --color-warning: oklch(0.70 0.18 80);
+  --color-error: oklch(0.55 0.22 25);
+
+  /* Typography */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Spacing & radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px oklch(0.15 0.01 260 / 0.05);
+  --shadow-md: 0 4px 6px -1px oklch(0.15 0.01 260 / 0.07), 0 2px 4px -2px oklch(0.15 0.01 260 / 0.05);
+  --shadow-lg: 0 10px 15px -3px oklch(0.15 0.01 260 / 0.08), 0 4px 6px -4px oklch(0.15 0.01 260 / 0.04);
+  --shadow-xl: 0 20px 25px -5px oklch(0.15 0.01 260 / 0.08), 0 8px 10px -6px oklch(0.15 0.01 260 / 0.04);
+}
+
+/* ─── Base styles ────────────────────────────────────────────── */
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Utility classes ────────────────────────────────────────── */
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Smooth anchor scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Section spacing — consistent vertical rhythm */
+.section {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+/* Container — centered with horizontal padding */
+.container {
+  width: 100%;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Subtle grid background for hero/sections */
+.bg-grid {
+  background-image:
+    linear-gradient(var(--color-border-light) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border-light) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Focus ring utility */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
