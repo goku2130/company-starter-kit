@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface PricingTier {
+export interface PricingTier {
   name: string;
   price: string;
   period: string;
   description: string;
-  features: string[];
+  features: readonly string[] | string[];
   cta: { label: string; href: string };
   highlighted: boolean;
 }
