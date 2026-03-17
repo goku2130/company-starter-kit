@@ -12,26 +12,45 @@ export default function ContactPage() {
   const { contact } = siteConfig;
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    // TODO: POST to /api/contact when backend is wired up
-    await new Promise((r) => setTimeout(r, 600));
+    try {
+      // Store as a lead with source "contact" — captures the inquiry
+      // and triggers the same notification pipeline as the lead form.
+      const subject = data.get("subject") as string;
+      const message = data.get("message") as string;
+      const company = [subject, message].filter(Boolean).join(" — ");
 
-    console.log("Contact form:", {
-      name: data.get("name"),
-      email: data.get("email"),
-      subject: data.get("subject"),
-      message: data.get("message"),
-    });
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.get("name"),
+          email: data.get("email"),
+          company, // Store subject + message in company field
+          source: "contact",
+        }),
+      });
 
-    setLoading(false);
-    setSubmitted(true);
+      if (!res.ok) {
+        const body = (await res.json()) as { error?: string };
+        throw new Error(body.error ?? "Something went wrong");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -101,6 +120,9 @@ export default function ContactPage() {
                     required
                   />
                 </div>
+                {error && (
+                  <p className="text-sm text-error">{error}</p>
+                )}
                 <Button type="submit" size="lg" disabled={loading}>
                   {loading ? (
                     <span className="flex items-center gap-2">

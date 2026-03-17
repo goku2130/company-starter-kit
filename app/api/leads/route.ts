@@ -1,15 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getDb } from "@/lib/db";
+import { getDbReady } from "@/lib/db";
 import { inngest } from "@/inngest/client";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, company } = body as {
+    const { name, email, company, source } = body as {
       name?: string;
       email?: string;
       company?: string;
+      source?: string;
     };
+
+    const leadSource = source === "contact" ? "contact" : "website";
 
     if (!name || !email) {
       return NextResponse.json(
@@ -26,11 +29,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sql = getDb();
+    const sql = await getDbReady();
 
     const rows = await sql`
       INSERT INTO leads (name, email, company, source)
-      VALUES (${name}, ${email}, ${company ?? ""}, 'website')
+      VALUES (${name}, ${email}, ${company ?? ""}, ${leadSource})
       RETURNING id, created_at
     `;
 

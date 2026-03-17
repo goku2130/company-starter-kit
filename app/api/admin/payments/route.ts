@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getDbReady } from "@/lib/db";
 
 export async function GET() {
   if (process.env.YOCTO_SSO_SECRET) {
@@ -11,7 +11,7 @@ export async function GET() {
   }
 
   try {
-    const sql = getDb();
+    const sql = await getDbReady();
     const rows = await sql`
       SELECT id, customer_email, amount_cents, currency, status, metadata, created_at
       FROM payments

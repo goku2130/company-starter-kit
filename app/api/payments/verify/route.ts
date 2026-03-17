@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getDb } from "@/lib/db";
+import { getDbReady } from "@/lib/db";
 
 /**
  * Verify a payment by customer email or Stripe session ID.
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const sql = getDb();
+    const sql = await getDbReady();
 
     let rows;
     if (sessionId) {

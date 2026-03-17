@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getDbReady } from "@/lib/db";
 
 const SETTING_KEYS = [
   "site_name",
@@ -19,7 +19,7 @@ export async function GET() {
   }
 
   try {
-    const sql = getDb();
+    const sql = await getDbReady();
     const rows = await sql`
       SELECT key, value FROM settings WHERE key = ANY(${SETTING_KEYS as unknown as string[]})
     `;
@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const sql = getDb();
+    const sql = await getDbReady();
 
     for (const key of SETTING_KEYS) {
       if (key in (body as Record<string, unknown>)) {

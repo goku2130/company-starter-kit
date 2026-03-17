@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getDbReady } from "@/lib/db";
 
 export async function GET() {
   // In production, require auth. In dev, allow through.
@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   try {
-    const sql = getDb();
+    const sql = await getDbReady();
 
     const [leadCount] = await sql`SELECT count(*)::int as count FROM leads`;
     const [weekCount] = await sql`

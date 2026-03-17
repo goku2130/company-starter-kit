@@ -3,11 +3,18 @@
 
    Each company site gets its own Neon database. The connection string
    is set via DATABASE_URL in .env.local.
+
+   Schema auto-bootstrap: the first DB call in a cold-start
+   automatically creates tables if they don't exist. No manual
+   /api/setup POST required.
    ═══════════════════════════════════════════════════════════════════ */
 
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import { siteConfig } from "@/site.config";
 
 let _sql: NeonQueryFunction<false, false> | null = null;
+let _schemaReady = false;
+let _schemaPromise: Promise<void> | null = null;
 
 export function getDb() {
   if (!_sql) {
@@ -20,9 +27,33 @@ export function getDb() {
   return _sql;
 }
 
+/**
+ * Returns a DB handle with guaranteed schema. Call this instead of
+ * getDb() in API routes that need tables to exist. The bootstrap
+ * runs once per cold start and is a no-op after that.
+ */
+export async function getDbReady(): Promise<NeonQueryFunction<false, false>> {
+  const sql = getDb();
+  if (!_schemaReady) {
+    // Deduplicate concurrent calls during cold start
+    if (!_schemaPromise) {
+      _schemaPromise = ensureSchema()
+        .then(() => {
+          _schemaReady = true;
+        })
+        .catch((err) => {
+          _schemaPromise = null; // Allow retry on next request
+          throw err;
+        });
+    }
+    await _schemaPromise;
+  }
+  return sql;
+}
+
 /* ─── Schema bootstrap ───────────────────────────────────────────
-   Called once on first deploy (or via a setup script).
-   Creates the tables if they don't exist.
+   Creates tables if they don't exist. Uses IF NOT EXISTS so it's
+   safe to run repeatedly. Called automatically by getDbReady().
    ─────────────────────────────────────────────────────────────── */
 
 export async function ensureSchema() {
@@ -61,13 +92,14 @@ export async function ensureSchema() {
     )
   `;
 
-  /* Seed default settings if empty */
+  /* Seed default settings from siteConfig — not hardcoded values.
+     ON CONFLICT DO NOTHING ensures we only seed once. */
   await sql`
     INSERT INTO settings (key, value)
     VALUES
-      ('site_name', ${JSON.stringify('"CashPulse"')}::jsonb),
-      ('site_tagline', ${JSON.stringify('"Financial intelligence for growing businesses"')}::jsonb),
-      ('contact_email', ${JSON.stringify('"hello@cashpulse.com"')}::jsonb),
+      ('site_name', ${JSON.stringify(siteConfig.name)}::jsonb),
+      ('site_tagline', ${JSON.stringify(siteConfig.tagline)}::jsonb),
+      ('contact_email', ${JSON.stringify(siteConfig.contact.email)}::jsonb),
       ('early_adopter_price_cents', '1900'::jsonb),
       ('trial_days', '14'::jsonb)
     ON CONFLICT (key) DO NOTHING

@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 
 export interface PricingTier {
   name: string;
+  /** "free" tiers link to lead form; "paid" tiers link to /checkout */
+  type: "free" | "paid";
   price: string;
   period: string;
   description: string;

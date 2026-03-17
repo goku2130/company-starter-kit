@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getDbReady } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   if (process.env.YOCTO_SSO_SECRET) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   );
 
   try {
-    const sql = getDb();
+    const sql = await getDbReady();
     const rows = await sql`
       SELECT id, name, email, company, source, created_at
       FROM leads

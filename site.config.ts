@@ -126,6 +126,7 @@ export const siteConfig = {
     tiers: [
       {
         name: "Free trial",
+        type: "free",
         price: "Free",
         period: "",
         description: "Try everything, no strings attached",
@@ -140,6 +141,7 @@ export const siteConfig = {
       },
       {
         name: "Early Adopters",
+        type: "paid",
         price: "€19",
         period: "/month",
         description: "Lock in the founding rate — forever",
@@ -151,7 +153,7 @@ export const siteConfig = {
           "Priority support",
           "Early access to new features",
         ],
-        cta: { label: "Become an early adopter", href: "#lead-form" },
+        cta: { label: "Become an early adopter", href: "/checkout?plan=early-adopters" },
         highlighted: true,
       },
     ],
@@ -169,18 +171,15 @@ export const siteConfig = {
   /* ─── Footer ───────────────────────────────────────────────────── */
   footer: {
     companyLinks: [
-      { label: "About", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Careers", href: "#" },
+      { label: "Contact", href: "/contact" },
     ],
     productLinks: [
       { label: "Features", href: "/#features" },
       { label: "Pricing", href: "/pricing" },
-      { label: "Contact", href: "/contact" },
     ],
     legalLinks: [
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
     ],
     copyright: "CashPulse",
   },

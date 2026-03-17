@@ -1,11 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getDb } from "@/lib/db";
+import { getDbReady } from "@/lib/db";
 
 /**
  * Create a Stripe Checkout session via YoctoCorp Pay SDK.
  *
  * The customer pays through Stripe, routed via YoctoCorp's platform.
  * YoctoCorp takes the platform fee (3%) and routes the rest to the owner.
+ *
+ * Price is read from the `settings` table (early_adopter_price_cents)
+ * so admin changes propagate without a code deploy.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -35,6 +38,16 @@ export async function POST(request: NextRequest) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";
 
+    // Read price from DB settings — falls back to 1900 (€19) if not set
+    const sql = await getDbReady();
+    const [priceSetting] = await sql`
+      SELECT value FROM settings WHERE key = 'early_adopter_price_cents'
+    `;
+    const unitAmountCents =
+      typeof priceSetting?.value === "number"
+        ? priceSetting.value
+        : 1900;
+
     // Call YoctoCorp Pay SDK to create a checkout session
     const response = await fetch(`${baseUrl}/create-checkout`, {
       method: "POST",
@@ -44,7 +57,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         productName: planName ?? "Early Adopters — Monthly",
-        unitAmountCents: 1900, // €19.00
+        unitAmountCents,
         currency: "eur",
         customerEmail,
         successUrl: `${siteUrl}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
@@ -70,12 +83,11 @@ export async function POST(request: NextRequest) {
     };
 
     // Record the pending payment in our DB
-    const sql = getDb();
     await sql`
       INSERT INTO payments (customer_email, amount_cents, currency, status, stripe_checkout_session_id, metadata)
       VALUES (
         ${customerEmail},
-        1900,
+        ${unitAmountCents},
         'eur',
         'pending',
         ${result.data?.sessionId ?? null},

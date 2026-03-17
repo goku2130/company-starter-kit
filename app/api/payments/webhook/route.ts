@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getDb } from "@/lib/db";
+import { getDbReady } from "@/lib/db";
 import { inngest } from "@/inngest/client";
 
 /**
@@ -7,9 +7,24 @@ import { inngest } from "@/inngest/client";
  *
  * YoctoCorp forwards the relevant Stripe events to each company's
  * webhook endpoint. We update the payment status accordingly.
+ *
+ * Verification: The webhook must include the YOCTO_APP_KEY in the
+ * x-app-key header to prove it originated from YoctoCorp Pay.
  */
 export async function POST(request: NextRequest) {
   try {
+    // Verify the webhook is from YoctoCorp Pay — check the shared app key
+    const appKey = process.env.YOCTO_PAY_API_KEY;
+    if (appKey) {
+      const headerKey = request.headers.get("x-app-key");
+      if (headerKey !== appKey) {
+        return NextResponse.json(
+          { error: "Unauthorized webhook" },
+          { status: 401 },
+        );
+      }
+    }
+
     const body = await request.json();
     const { event, sessionId, customerEmail, status } = body as {
       event?: string;
@@ -25,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sql = getDb();
+    const sql = await getDbReady();
 
     if (event === "checkout.session.completed" || status === "paid") {
       await sql`
