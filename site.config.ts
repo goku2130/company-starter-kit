@@ -199,6 +199,6 @@ export const siteConfig = {
       "Real-time cash flow forecasting, automated invoicing, and payment tracking for freelancers and small businesses.",
     ogImage: "/og.png",
   },
-} as const;
+};
 
 export type SiteConfig = typeof siteConfig;
