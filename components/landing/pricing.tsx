@@ -1,5 +1,5 @@
 import { siteConfig } from "@/site.config";
-import { PricingCard } from "@/components/landing/pricing-card";
+import { PricingCard, type PricingTier } from "@/components/landing/pricing-card";
 
 export function Pricing() {
   const { pricing } = siteConfig;
@@ -20,7 +20,7 @@ export function Pricing() {
         {/* Pricing cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {pricing.tiers.map((tier) => (
-            <PricingCard key={tier.name} tier={tier} />
+            <PricingCard key={tier.name} tier={tier as PricingTier} />
           ))}
         </div>
       </div>
